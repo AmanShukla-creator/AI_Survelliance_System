@@ -1,6 +1,37 @@
+# ======================
+# Python
+# ======================
 __pycache__/
-.env
 venv/
+
+# ======================
+# Environment variables
+# ======================
+.env
+.env.*
+
+# ======================
+# Node / Frontend
+# ======================
+node_modules/
+dist/
+frontend/dist/
+
+# ======================
+# Media files
+# ======================
 *.mp4
 *.avi
 
+# ======================
+# Archives / junk
+# ======================
+*.zip
+cleanup.txt
+
+# ======================
+# OS / Editor
+# ======================
+.DS_Store
+.vscode/
+package-lock.json
