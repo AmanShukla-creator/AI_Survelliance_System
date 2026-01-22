@@ -1,0 +1,17 @@
+{
+  "extends": "stylelint-config-standard",
+  "rules": {
+    "at-rule-no-unknown": [
+      true,
+      {
+        "ignoreAtRules": ["tailwind", "layer", "apply", "responsive", "screen"]
+      }
+    ],
+    "selector-pseudo-element-no-unknown": [
+      true,
+      {
+        "ignorePseudoElements": ["webkit-scrollbar", "webkit-scrollbar-track", "webkit-scrollbar-thumb"]
+      }
+    ]
+  }
+}
