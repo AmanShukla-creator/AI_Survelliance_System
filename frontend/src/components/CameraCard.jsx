@@ -12,7 +12,10 @@ export default function CameraCard() {
         onClick={() => setOpen(true)}
       >
         <div className="relative aspect-video bg-black">
-          <img src="/video_feed" className="w-full h-full object-cover" />
+          <img
+            src="http://localhost:5000/video_feed"
+            className="w-full h-full object-cover"
+          />
 
           {/* Hover Overlay */}
           <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition flex items-center justify-center">
@@ -34,7 +37,7 @@ export default function CameraCard() {
           className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center"
         >
           <img
-            src="/video_feed"
+            src="http://localhost:5000/video_feed"
             className="max-w-[90%] max-h-[90%] rounded-xl"
           />
         </div>

@@ -1,10 +1,10 @@
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { auth } from "./services/firebase";
 import { useEffect, useState } from "react";
+import { auth } from "./services/firebase";
 
+import Dashboard from "./pages/Dashboard";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
-import Dashboard from "./pages/Dashboard";
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -13,7 +13,9 @@ export default function App() {
   const isDemo = Boolean(localStorage.getItem("demo-user"));
 
   useEffect(() => {
-    return onAuthStateChanged(auth, setUser);
+    if (auth) {
+      return onAuthStateChanged(auth, setUser);
+    }
   }, []);
 
   const goToLanding = () => {
