@@ -38,8 +38,18 @@ def get_camera():
     global camera
     with camera_lock:
         if camera is None or not camera.isOpened():
-            camera = cv2.VideoCapture(0)
+            # Prefer DirectShow on Windows to avoid MSMF errors
+            camera = cv2.VideoCapture(0, cv2.CAP_DSHOW)
             if not camera.isOpened():
+                # Fallback to default backend
+                camera = cv2.VideoCapture(0)
+
+            if camera.isOpened():
+                # Set reasonable defaults to improve compatibility
+                camera.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+                camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+                camera.set(cv2.CAP_PROP_FPS, 15)
+            else:
                 print("❌ Camera not accessible")
                 return None
     return camera
@@ -66,8 +76,8 @@ def generate_frames():
         try:
             # Enhanced YOLO detection with tracking
             detection_result = detect_objects(
-                frame, 
-                enable_tracking=True,
+                frame,
+                enable_tracking=False,  # disable tracking to avoid lap dependency build
                 enable_motion_filter=False
             )
             
