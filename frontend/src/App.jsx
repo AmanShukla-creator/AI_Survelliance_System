@@ -27,20 +27,8 @@ export default function App() {
     setScreen("landing");
   };
 
-  const resetDemo = () => {
-    localStorage.removeItem("demo-user");
-    location.reload();
-  };
-
   if (user || isDemo) {
-    return (
-      <Dashboard
-        onHome={goToLanding}
-        onLogout={logout}
-        isDemo={isDemo}
-        onResetDemo={resetDemo}
-      />
-    );
+    return <Dashboard onHome={goToLanding} onLogout={logout} isDemo={isDemo} />;
   }
 
   if (screen === "login") {
