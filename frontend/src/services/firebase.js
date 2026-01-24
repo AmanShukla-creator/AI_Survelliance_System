@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
+console.log(import.meta.env.VITE_FIREBASE_API_KEY);
 
 const isPlaceholder = (value) => {
   if (!value) return true;
@@ -10,18 +11,17 @@ const isPlaceholder = (value) => {
     normalized.includes("your-api-key-here") ||
     normalized.includes("your-project-id") ||
     normalized.includes("your-sender-id") ||
-    normalized.includes("your-app-id") ||
-    normalized.startsWith("demo-")
+    normalized.includes("your-app-id")
   );
 };
 
 const env = import.meta.env;
+// Minimal keys needed for Firebase Auth.
+// NOTE: storageBucket/messagingSenderId are optional for auth-only flows.
 const requiredKeys = [
   "VITE_FIREBASE_API_KEY",
   "VITE_FIREBASE_AUTH_DOMAIN",
   "VITE_FIREBASE_PROJECT_ID",
-  "VITE_FIREBASE_STORAGE_BUCKET",
-  "VITE_FIREBASE_MESSAGING_SENDER_ID",
   "VITE_FIREBASE_APP_ID",
 ];
 
@@ -43,10 +43,22 @@ if (firebaseStatus.configured) {
     apiKey: env.VITE_FIREBASE_API_KEY,
     authDomain: env.VITE_FIREBASE_AUTH_DOMAIN,
     projectId: env.VITE_FIREBASE_PROJECT_ID,
-    storageBucket: env.VITE_FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: env.VITE_FIREBASE_MESSAGING_SENDER_ID,
     appId: env.VITE_FIREBASE_APP_ID,
   };
+
+  if (
+    env.VITE_FIREBASE_STORAGE_BUCKET &&
+    !isPlaceholder(env.VITE_FIREBASE_STORAGE_BUCKET)
+  ) {
+    firebaseConfig.storageBucket = env.VITE_FIREBASE_STORAGE_BUCKET;
+  }
+
+  if (
+    env.VITE_FIREBASE_MESSAGING_SENDER_ID &&
+    !isPlaceholder(env.VITE_FIREBASE_MESSAGING_SENDER_ID)
+  ) {
+    firebaseConfig.messagingSenderId = env.VITE_FIREBASE_MESSAGING_SENDER_ID;
+  }
 
   try {
     app = initializeApp(firebaseConfig);

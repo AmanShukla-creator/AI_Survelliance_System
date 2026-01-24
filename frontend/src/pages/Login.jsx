@@ -7,15 +7,69 @@ import { auth, firebaseStatus, provider } from "../services/firebase";
 export default function Login() {
   const [error, setError] = useState("");
 
+  const formatAuthError = (e) => {
+    const code = String(e?.code || "");
+    const msg = String(e?.message || "").trim();
+
+    if (code === "auth/unauthorized-domain") {
+      return (
+        "Google sign-in blocked: unauthorized domain. " +
+        "In Firebase Console → Authentication → Settings → Authorized domains, add your dev domain (usually localhost)."
+      );
+    }
+
+    if (code === "auth/operation-not-allowed") {
+      return (
+        "Google sign-in is not enabled for this Firebase project. " +
+        "In Firebase Console → Authentication → Sign-in method, enable the Google provider."
+      );
+    }
+
+    if (code === "auth/popup-blocked") {
+      return (
+        "Popup was blocked by the browser. " +
+        "Allow popups for this site and try again."
+      );
+    }
+
+    if (code === "auth/popup-closed-by-user") {
+      return "Popup was closed before completing sign-in.";
+    }
+
+    if (code === "auth/cancelled-popup-request") {
+      return "Another sign-in popup is already open.";
+    }
+
+    if (code === "auth/invalid-api-key") {
+      return (
+        "Invalid API key. " +
+        "Double-check VITE_FIREBASE_API_KEY in frontend/.env and restart the dev server."
+      );
+    }
+
+    const suffix = code ? ` (${code})` : "";
+    return `Google sign-in failed${suffix}. ${msg}`.trim();
+  };
+
   const login = async () => {
     setError("");
 
     if (!firebaseStatus.configured || !auth || !provider) {
       const missing = firebaseStatus.missingOrPlaceholder?.length
-        ? `Missing/placeholder env: ${firebaseStatus.missingOrPlaceholder.join(", ")}`
-        : "Firebase is not configured.";
+        ? `Missing/placeholder env: ${firebaseStatus.missingOrPlaceholder.join(", ")}.`
+        : "";
+
+      const initError = firebaseStatus.initError
+        ? `Firebase initialization failed: ${firebaseStatus.initError}.`
+        : "";
+
+      const guidance =
+        "Ensure the dev server was restarted after editing frontend/.env.";
+
       setError(
-        `${missing} Update frontend/.env with real Firebase web config values and restart the dev server.`,
+        [missing, initError || "Firebase is not configured.", guidance]
+          .filter(Boolean)
+          .join(" "),
       );
       return;
     }
@@ -23,8 +77,7 @@ export default function Login() {
     try {
       await signInWithPopup(auth, provider);
     } catch (e) {
-      const code = e?.code ? ` (${e.code})` : "";
-      setError(`Google sign-in failed${code}. ${e?.message || ""}`.trim());
+      setError(formatAuthError(e));
     }
   };
 
