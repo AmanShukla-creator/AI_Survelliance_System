@@ -1,43 +1,58 @@
+import { useRef } from "react";
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 import CameraGrid from "../components/CameraGrid";
 import AlertFeed from "../components/AlertFeed";
 import StatsOverview from "../components/StatsOverview";
 
-export default function Dashboard({ onHome, onLogout, isDemo, onResetDemo }) {
+export default function Dashboard({ onHome, onLogout, isDemo }) {
+  const topRef = useRef(null);
+  const camerasRef = useRef(null);
+  const alertsRef = useRef(null);
+
+  const scrollTo = (section) => {
+    const map = {
+      top: topRef,
+      cameras: camerasRef,
+      alerts: alertsRef
+    };
+
+    map[section]?.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+  };
+
   return (
     <div className="flex h-screen w-screen overflow-hidden">
 
-      {/* Sidebar */}
-      <div className="shrink-0">
-        <Sidebar />
-      </div>
+      <Sidebar scrollTo={scrollTo} />
 
-      {/* Main Area */}
       <div className="flex flex-col flex-1 min-w-0">
+        <Navbar onHome={onHome} onLogout={onLogout} isDemo={isDemo} />
 
-        <Navbar
-          onHome={onHome}
-          onLogout={onLogout}
-          isDemo={isDemo}
-          onResetDemo={onResetDemo}
-        />
+        <main className="flex-1 overflow-y-auto px-10 py-8 space-y-16 bg-[#020617]">
 
-        <main className="flex-1 overflow-y-auto px-10 py-8 space-y-10 bg-[#020617]">
-          
-          {/* STATS */}
-          <StatsOverview />
+          {/* TOP / DASHBOARD */}
+          <section ref={topRef}>
+            <StatsOverview />
+          </section>
 
-          {/* CONTENT GRID */}
-          <div className="grid grid-cols-12 gap-10">
-            <div className="col-span-8">
-              <CameraGrid />
-            </div>
+          {/* LIVE CAMERAS */}
+          <section ref={camerasRef}>
+            <h2 className="text-2xl font-semibold text-white mb-6">
+              Live Cameras
+            </h2>
+            <CameraGrid />
+          </section>
 
-            <div className="col-span-4">
-              <AlertFeed />
-            </div>
-          </div>
+          {/* THREAT ALERTS */}
+          <section ref={alertsRef}>
+            <h2 className="text-2xl font-semibold text-white mb-6">
+              Threat Alerts
+            </h2>
+            <AlertFeed />
+          </section>
 
         </main>
       </div>
