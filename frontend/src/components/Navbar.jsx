@@ -1,15 +1,17 @@
-import { signOut } from "firebase/auth";
-import { auth } from "../services/firebase";
+import { Home } from "lucide-react";
 
 export default function Navbar({ onHome, onLogout, isDemo }) {
   return (
     <header className="h-16 glass flex items-center justify-between px-8">
 
+      {/* HOME BUTTON */}
       <button
         onClick={onHome}
-        className="text-lg font-semibold text-sky-400 hover:opacity-80"
+        className="flex items-center gap-2 text-sky-400 hover:text-white transition"
+        title="Go to Landing Page"
       >
-        ⟁ AEGIS
+        <Home size={20} />
+        <span className="font-semibold">Home</span>
       </button>
 
       <div className="flex items-center gap-4">
