@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import { apiUrl } from "../config/api";
 
 export default function AlertFeed() {
   const [alerts, setAlerts] = useState([]);
@@ -19,7 +20,7 @@ export default function AlertFeed() {
     // 🔹 REAL BACKEND MODE
     const id = setInterval(async () => {
       try {
-        const r = await fetch("/api/alerts?max_age=60");
+        const r = await fetch(apiUrl("/api/alerts?max_age=60"));
         if (!r.ok) return;
         const payload = await r.json();
         const list = Array.isArray(payload?.alerts) ? payload.alerts : [];

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { apiUrl } from "../config/api";
 
 export default function StatsOverview() {
   const [stats, setStats] = useState({
@@ -13,7 +14,7 @@ export default function StatsOverview() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const r = await fetch("/api/stats");
+        const r = await fetch(apiUrl("/api/stats"));
         if (r.ok) {
           const payload = await r.json();
           const data = payload?.data || {};

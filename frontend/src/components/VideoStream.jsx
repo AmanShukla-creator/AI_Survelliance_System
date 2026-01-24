@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { apiUrl } from "../config/api";
 
 const DEFAULT_FPS = 6;
 
@@ -67,7 +68,7 @@ export default function VideoStream() {
 
           inFlightRef.current = true;
           try {
-            const r = await fetch("/api/process_frame", {
+            const r = await fetch(apiUrl("/api/process_frame"), {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ image: dataUrl, return_annotated: true }),

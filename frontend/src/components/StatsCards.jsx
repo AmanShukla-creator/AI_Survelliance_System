@@ -1,5 +1,6 @@
 import { AlertTriangle, BarChart3, Camera, Users } from "lucide-react";
 import { useEffect, useState } from "react";
+import { apiUrl } from "../config/api";
 
 export default function StatsCards() {
   const [stats, setStats] = useState({
@@ -13,7 +14,7 @@ export default function StatsCards() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await fetch("/api/stats");
+        const response = await fetch(apiUrl("/api/stats"));
         if (response.ok) {
           const payload = await response.json();
           const data = payload?.data || {};
