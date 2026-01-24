@@ -1,11 +1,31 @@
 import { signInWithPopup } from "firebase/auth";
-import { auth, provider } from "../services/firebase";
 import { motion } from "framer-motion";
 import { Chrome, Play } from "lucide-react";
+import { useState } from "react";
+import { auth, firebaseStatus, provider } from "../services/firebase";
 
 export default function Login() {
+  const [error, setError] = useState("");
+
   const login = async () => {
-    await signInWithPopup(auth, provider);
+    setError("");
+
+    if (!firebaseStatus.configured || !auth || !provider) {
+      const missing = firebaseStatus.missingOrPlaceholder?.length
+        ? `Missing/placeholder env: ${firebaseStatus.missingOrPlaceholder.join(", ")}`
+        : "Firebase is not configured.";
+      setError(
+        `${missing} Update frontend/.env with real Firebase web config values and restart the dev server.`,
+      );
+      return;
+    }
+
+    try {
+      await signInWithPopup(auth, provider);
+    } catch (e) {
+      const code = e?.code ? ` (${e.code})` : "";
+      setError(`Google sign-in failed${code}. ${e?.message || ""}`.trim());
+    }
   };
 
   const demoLogin = () => {
@@ -15,7 +35,6 @@ export default function Login() {
 
   return (
     <div className="relative h-screen flex items-center justify-center overflow-hidden">
-
       {/* Background */}
       <motion.div
         animate={{ opacity: [0.35, 0.55, 0.35] }}
@@ -41,9 +60,7 @@ export default function Login() {
         className="relative z-10 w-[520px] glass px-14 py-16"
       >
         <div className="text-center">
-          <h1 className="text-5xl font-semibold text-sky-400">
-            AEGIS
-          </h1>
+          <h1 className="text-5xl font-semibold text-sky-400">AEGIS</h1>
           <p className="text-slate-400 mt-3 text-lg">
             AI Surveillance Command Platform
           </p>
@@ -51,9 +68,14 @@ export default function Login() {
 
         <div className="my-12 h-px bg-white/10" />
 
+        {error && (
+          <div className="mb-6 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-200">
+            {error}
+          </div>
+        )}
+
         {/* BUTTONS — FIXED */}
         <div className="space-y-6">
-
           {/* GOOGLE LOGIN */}
           <motion.button
             whileHover={{ scale: 1.04 }}

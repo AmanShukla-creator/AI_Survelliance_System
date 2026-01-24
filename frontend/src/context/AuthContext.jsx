@@ -1,6 +1,11 @@
-import { createContext, useState, useEffect, useContext } from 'react';
-import { onAuthStateChanged, signOut, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
-import { auth } from '../config/firebase';
+import {
+  GoogleAuthProvider,
+  onAuthStateChanged,
+  signInWithPopup,
+  signOut,
+} from "firebase/auth";
+import { createContext, useContext, useEffect, useState } from "react";
+import { auth } from "../services/firebase";
 
 export const AuthContext = createContext();
 
@@ -9,30 +14,43 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!auth) {
+      setUser(null);
+      setLoading(false);
+      return;
+    }
+
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setLoading(false);
     });
+
     return unsubscribe;
   }, []);
 
   const loginWithGoogle = () => {
+    if (!auth) {
+      return Promise.reject(new Error("Firebase Auth is not configured."));
+    }
     const provider = new GoogleAuthProvider();
-    provider.setCustomParameters({ prompt: 'select_account' });
+    provider.setCustomParameters({ prompt: "select_account" });
     return signInWithPopup(auth, provider);
   };
 
   const logout = () => {
+    if (!auth) {
+      return Promise.resolve();
+    }
     return signOut(auth);
   };
-  
-  // This is for the demo mode login from the previous task. 
+
+  // This is for the demo mode login from the previous task.
   // We will keep it for now, as it might be useful for testing.
   const demoLogin = () => {
     const demoUser = {
-      uid: 'demouser',
-      displayName: 'Demo User',
-      email: 'demo@example.com',
+      uid: "demouser",
+      displayName: "Demo User",
+      email: "demo@example.com",
     };
     setUser(demoUser);
     setLoading(false);
@@ -43,7 +61,7 @@ export function AuthProvider({ children }) {
     loading,
     loginWithGoogle,
     logout,
-    demoLogin
+    demoLogin,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -52,7 +70,7 @@ export function AuthProvider({ children }) {
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 }
