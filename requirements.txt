@@ -1,5 +1,6 @@
+flask==3.0.0
+flask-cors==4.0.0
+gunicorn
 ultralytics
-opencv-python
+opencv-python-headless
 numpy
-mediapipe
-pygame

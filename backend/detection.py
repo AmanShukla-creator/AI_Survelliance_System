@@ -3,9 +3,48 @@ import numpy as np
 from ultralytics import YOLO
 from collections import defaultdict, deque
 from datetime import datetime
+import os
+from pathlib import Path
+import threading
 
-# Initialize YOLO model
-model = YOLO("yolov8n.pt")
+# Lazy-load YOLO model so the API can boot fast (important for PaaS health checks)
+_model = None
+_model_lock = threading.Lock()
+
+
+def _resolve_model_path() -> str:
+    """Resolve the YOLO model path.
+
+    Priority:
+      1) YOLO_MODEL_PATH env var
+      2) backend/yolov8n.pt
+      3) repo root yolov8n.pt
+      4) fallback to 'yolov8n.pt' (ultralytics may download if needed)
+    """
+    env_path = os.getenv("YOLO_MODEL_PATH")
+    if env_path:
+        return env_path
+
+    here = Path(__file__).resolve().parent
+    candidate = here / "yolov8n.pt"
+    if candidate.exists():
+        return str(candidate)
+
+    root_candidate = here.parent / "yolov8n.pt"
+    if root_candidate.exists():
+        return str(root_candidate)
+
+    return "yolov8n.pt"
+
+
+def _get_model() -> YOLO:
+    global _model
+    if _model is not None:
+        return _model
+    with _model_lock:
+        if _model is None:
+            _model = YOLO(_resolve_model_path())
+    return _model
 
 # Configuration parameters
 class DetectionConfig:
@@ -231,9 +270,11 @@ def detect_objects(frame, enable_tracking=True, enable_motion_filter=False):
                 'skipped': False
             }
     
+    yolo = _get_model()
+
     # Run YOLO detection with tracking if enabled
     if enable_tracking:
-        results = model.track(
+        results = yolo.track(
             frame,
             conf=DetectionConfig.CONF_THRESHOLD,
             iou=DetectionConfig.IOU_THRESHOLD,
@@ -241,7 +282,7 @@ def detect_objects(frame, enable_tracking=True, enable_motion_filter=False):
             verbose=False
         )
     else:
-        results = model(
+        results = yolo(
             frame,
             conf=DetectionConfig.CONF_THRESHOLD,
             iou=DetectionConfig.IOU_THRESHOLD,

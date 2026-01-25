@@ -1,37 +1,49 @@
+import { motion } from "framer-motion";
+import { useState } from "react";
 import VideoStream from "./VideoStream";
-import { Video, WifiOff } from "lucide-react";
 
-export default function CameraCard({ id, name, status }) {
+export default function CameraCard() {
+  const [open, setOpen] = useState(false);
+
   return (
-    <div className="glass rounded-xl overflow-hidden border border-white/10">
-      
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
-        <div className="flex items-center gap-2">
-          <Video size={18} className="text-sky-400" />
-          <span className="font-medium text-sm">{name}</span>
-        </div>
-
-        {status === "online" ? (
-          <span className="text-xs text-emerald-400">● Online</span>
-        ) : (
-          <span className="text-xs text-rose-400 flex items-center gap-1">
-            <WifiOff size={12} />
-            Offline
-          </span>
-        )}
-      </div>
-
-      {/* Video */}
-      <div className="aspect-video bg-black">
-        {status === "online" ? (
+    <>
+      {/* Camera Card */}
+      <motion.div
+        whileHover={{ scale: 1.03 }}
+        className="glass rounded-xl overflow-hidden cursor-pointer border border-white/10"
+        onClick={() => setOpen(true)}
+      >
+        <div className="relative aspect-video bg-black">
           <VideoStream />
-        ) : (
-          <div className="h-full flex items-center justify-center text-slate-400 text-sm">
-            Camera offline
+
+          {/* Hover Overlay */}
+          <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition flex items-center justify-center">
+            <span className="px-4 py-2 rounded-lg bg-white/10 backdrop-blur text-sm">
+              Click to expand
+            </span>
           </div>
-        )}
-      </div>
-    </div>
+
+          {/* Live Badge */}
+          <div className="absolute top-4 left-4 px-3 py-1 rounded-full bg-sky-400 text-black text-xs font-semibold glow-blue">
+            LIVE • AI ACTIVE
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Fullscreen Modal */}
+      {open && (
+        <div
+          onClick={() => setOpen(false)}
+          className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center"
+        >
+          <div
+            className="w-[90%] max-w-[1200px] aspect-video rounded-xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <VideoStream />
+          </div>
+        </div>
+      )}
+    </>
   );
 }

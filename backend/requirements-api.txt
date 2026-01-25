@@ -1,9 +1,9 @@
 # API Server Requirements
 flask==3.0.0
 flask-cors==4.0.0
+gunicorn
 
 # Core Requirements
 ultralytics
-opencv-python
+opencv-python-headless
 numpy
-pygame
