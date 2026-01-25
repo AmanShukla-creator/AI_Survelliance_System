@@ -2,29 +2,45 @@ import { signInWithPopup } from "firebase/auth";
 import { motion } from "framer-motion";
 import { Chrome, Play } from "lucide-react";
 import { useState } from "react";
-import { auth, firebaseStatus, provider } from "../services/firebase";
+import { auth, provider, firebaseStatus } from "../services/firebase";
+
 
 export default function Login() {
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const login = async () => {
     setError("");
-
-    if (!firebaseStatus.configured || !auth || !provider) {
-      const missing = firebaseStatus.missingOrPlaceholder?.length
-        ? `Missing/placeholder env: ${firebaseStatus.missingOrPlaceholder.join(", ")}`
-        : "Firebase is not configured.";
-      setError(
-        `${missing} Update frontend/.env with real Firebase web config values and restart the dev server.`,
-      );
-      return;
-    }
+    setLoading(true);
 
     try {
-      await signInWithPopup(auth, provider);
+      console.log("Google Sign-In clicked");
+
+      if (!auth || !provider) {
+        throw new Error("Firebase auth is not initialized");
+      }
+
+      const result = await signInWithPopup(auth, provider);
+      console.log("Login successful:", result.user);
+
     } catch (e) {
-      const code = e?.code ? ` (${e.code})` : "";
-      setError(`Google sign-in failed${code}. ${e?.message || ""}`.trim());
+      console.error("Google sign-in error:", e);
+
+      let message = "Google sign-in failed.";
+
+      if (e.code === "auth/popup-blocked") {
+        message = "Popup blocked by browser. Please allow popups.";
+      } else if (e.code === "auth/unauthorized-domain") {
+        message = "This domain is not authorized in Firebase.";
+      } else if (e.code === "auth/invalid-api-key") {
+        message = "Invalid Firebase API key. Check .env file.";
+      } else if (e.message) {
+        message = e.message;
+      }
+
+      setError(message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -69,18 +85,19 @@ export default function Login() {
         <div className="my-12 h-px bg-white/10" />
 
         {error && (
-          <div className="mb-6 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-200">
+          <div className="mb-6 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
             {error}
           </div>
         )}
 
-        {/* BUTTONS — FIXED */}
+        {/* BUTTONS */}
         <div className="space-y-6">
           {/* GOOGLE LOGIN */}
           <motion.button
             whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.98 }}
             onClick={login}
+            disabled={loading}
             className="
               w-full py-5 rounded-2xl
               text-lg font-semibold text-white
@@ -92,10 +109,11 @@ export default function Login() {
               hover:shadow-sky-400/40
               transition-all duration-300
               flex items-center justify-center gap-3
+              disabled:opacity-60
             "
           >
             <Chrome size={20} />
-            Sign in with Google
+            {loading ? "Signing in..." : "Sign in with Google"}
           </motion.button>
 
           {/* DEMO LOGIN */}

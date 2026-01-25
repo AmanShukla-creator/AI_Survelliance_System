@@ -1,47 +1,37 @@
-import { motion } from "framer-motion";
-import { useState } from "react";
+import VideoStream from "./VideoStream";
+import { Video, WifiOff } from "lucide-react";
 
-export default function CameraCard() {
-  const [open, setOpen] = useState(false);
-
+export default function CameraCard({ id, name, status }) {
   return (
-    <>
-      <motion.div
-        whileHover={{ scale: 1.03 }}
-        className="glass overflow-hidden cursor-pointer"
-        onClick={() => setOpen(true)}
-      >
-        <div className="relative aspect-video bg-black">
-          <img
-            src="http://localhost:5000/video_feed"
-            className="w-full h-full object-cover"
-          />
-
-          {/* Hover Overlay */}
-          <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition flex items-center justify-center">
-            <span className="px-4 py-2 rounded-lg bg-white/10 backdrop-blur text-sm">
-              Click to expand
-            </span>
-          </div>
-
-          <div className="absolute top-4 left-4 px-3 py-1 rounded-full bg-sky-400 text-black text-sm glow-blue">
-            LIVE • AI ACTIVE
-          </div>
+    <div className="glass rounded-xl overflow-hidden border border-white/10">
+      
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
+        <div className="flex items-center gap-2">
+          <Video size={18} className="text-sky-400" />
+          <span className="font-medium text-sm">{name}</span>
         </div>
-      </motion.div>
 
-      {/* Fullscreen */}
-      {open && (
-        <div
-          onClick={() => setOpen(false)}
-          className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center"
-        >
-          <img
-            src="http://localhost:5000/video_feed"
-            className="max-w-[90%] max-h-[90%] rounded-xl"
-          />
-        </div>
-      )}
-    </>
+        {status === "online" ? (
+          <span className="text-xs text-emerald-400">● Online</span>
+        ) : (
+          <span className="text-xs text-rose-400 flex items-center gap-1">
+            <WifiOff size={12} />
+            Offline
+          </span>
+        )}
+      </div>
+
+      {/* Video */}
+      <div className="aspect-video bg-black">
+        {status === "online" ? (
+          <VideoStream />
+        ) : (
+          <div className="h-full flex items-center justify-center text-slate-400 text-sm">
+            Camera offline
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

@@ -5,6 +5,8 @@ export default function AlertFeed() {
   const [alerts, setAlerts] = useState([]);
   const isDemo = localStorage.getItem("demo-user");
 
+  const BACKEND = import.meta.env.VITE_BACKEND_URL;
+
   useEffect(() => {
     // 🔹 DEMO MODE (judge friendly)
     if (isDemo) {
@@ -19,15 +21,20 @@ export default function AlertFeed() {
     // 🔹 REAL BACKEND MODE
     const id = setInterval(async () => {
       try {
-        const r = await fetch("/api/alerts?max_age=60");
+        if (!BACKEND) return;
+
+        const r = await fetch(`${BACKEND}/api/alerts?max_age=60`);
         if (!r.ok) return;
+
         const payload = await r.json();
         const list = Array.isArray(payload?.alerts) ? payload.alerts : [];
+
         setAlerts(
           list.map((a) => {
             const severity = Number(a?.severity ?? 0);
             const level =
               severity >= 4 ? "high" : severity >= 2 ? "medium" : "low";
+
             return {
               class: a?.type ?? "Alert",
               confidence: Math.max(0, Math.min(1, severity / 5)),
@@ -35,13 +42,15 @@ export default function AlertFeed() {
               description: a?.description,
               timestamp: a?.timestamp,
             };
-          }),
+          })
         );
-      } catch {}
+      } catch (err) {
+        console.error("Alert fetch failed", err);
+      }
     }, 2000);
 
     return () => clearInterval(id);
-  }, [isDemo]);
+  }, [isDemo, BACKEND]);
 
   return (
     <aside className="glass px-6 py-7 h-full">
@@ -65,17 +74,23 @@ export default function AlertFeed() {
                     : "bg-yellow-500/10"
                 }`}
             >
-              <p className="text-lg font-medium text-rose-400">{a.class}</p>
+              <p className="text-lg font-medium text-rose-400">
+                {a.class}
+              </p>
 
-              {a.description ? (
-                <p className="text-sm text-slate-400 mt-1">{a.description}</p>
-              ) : null}
+              {a.description && (
+                <p className="text-sm text-slate-400 mt-1">
+                  {a.description}
+                </p>
+              )}
 
               <div className="flex justify-between items-center mt-2">
                 <p className="text-sm text-slate-400">
                   Confidence {Math.round(a.confidence * 100)}%
                 </p>
-                <span className="text-xs text-slate-500">just now</span>
+                <span className="text-xs text-slate-500">
+                  just now
+                </span>
               </div>
             </motion.div>
           ))}
