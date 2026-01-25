@@ -1,14 +1,12 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import { BACKEND_URL } from "../config/backend";
 
 export default function AlertFeed() {
   const [alerts, setAlerts] = useState([]);
   const isDemo = localStorage.getItem("demo-user");
 
-  const BACKEND = import.meta.env.VITE_BACKEND_URL;
-
   useEffect(() => {
-    // 🔹 DEMO MODE (judge friendly)
     if (isDemo) {
       setAlerts([
         { class: "Unauthorized Access", confidence: 0.94, level: "high" },
@@ -18,39 +16,24 @@ export default function AlertFeed() {
       return;
     }
 
-    // 🔹 REAL BACKEND MODE
     const id = setInterval(async () => {
       try {
-        if (!BACKEND) return;
-
-        const r = await fetch(`${BACKEND}/api/alerts?max_age=60`);
+        const r = await fetch(`${BACKEND_URL}/api/alerts?max_age=60`);
         if (!r.ok) return;
-
         const payload = await r.json();
-        const list = Array.isArray(payload?.alerts) ? payload.alerts : [];
-
+        const list = payload.alerts || [];
         setAlerts(
-          list.map((a) => {
-            const severity = Number(a?.severity ?? 0);
-            const level =
-              severity >= 4 ? "high" : severity >= 2 ? "medium" : "low";
-
-            return {
-              class: a?.type ?? "Alert",
-              confidence: Math.max(0, Math.min(1, severity / 5)),
-              level,
-              description: a?.description,
-              timestamp: a?.timestamp,
-            };
-          })
+          list.map((a) => ({
+            class: a.type,
+            confidence: Math.min(1, (a.severity || 1) / 5),
+            level: a.severity >= 4 ? "high" : "medium",
+          }))
         );
-      } catch (err) {
-        console.error("Alert fetch failed", err);
-      }
-    }, 2000);
+      } catch {}
+    }, 3000);
 
     return () => clearInterval(id);
-  }, [isDemo, BACKEND]);
+  }, [isDemo]);
 
   return (
     <aside className="glass px-6 py-7 h-full">
@@ -65,33 +48,16 @@ export default function AlertFeed() {
               key={i}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.35 }}
-              className={`px-5 py-4 rounded-xl cursor-pointer transition-all
-                ${
-                  a.level === "high"
-                    ? "bg-rose-500/15 glow-red"
-                    : "bg-yellow-500/10"
-                }`}
+              className={`px-5 py-4 rounded-xl ${
+                a.level === "high"
+                  ? "bg-rose-500/20"
+                  : "bg-yellow-500/20"
+              }`}
             >
-              <p className="text-lg font-medium text-rose-400">
-                {a.class}
+              <p className="text-lg font-medium text-rose-400">{a.class}</p>
+              <p className="text-sm text-slate-400 mt-1">
+                Confidence {Math.round(a.confidence * 100)}%
               </p>
-
-              {a.description && (
-                <p className="text-sm text-slate-400 mt-1">
-                  {a.description}
-                </p>
-              )}
-
-              <div className="flex justify-between items-center mt-2">
-                <p className="text-sm text-slate-400">
-                  Confidence {Math.round(a.confidence * 100)}%
-                </p>
-                <span className="text-xs text-slate-500">
-                  just now
-                </span>
-              </div>
             </motion.div>
           ))}
         </AnimatePresence>
