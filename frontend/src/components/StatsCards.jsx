@@ -13,7 +13,7 @@ export default function StatsCards() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await fetch("/api/stats");
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/stats`);
         if (response.ok) {
           const payload = await response.json();
           const data = payload?.data || {};
